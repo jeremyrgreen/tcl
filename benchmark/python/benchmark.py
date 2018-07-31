@@ -119,8 +119,8 @@ for i in range(3):
    timeNP = min(time.time() - s, timeNP)
 
 if( not tcl.equal(C, C_, 1000) ):
-    print "ERROR: validation" + FAIL + " failed!!!" + ENDC
-    print indC.replace(',','') != indC_np #transpose required
+    print("ERROR: validation" + FAIL + " failed!!!" + ENDC)
+    print(indC.replace(',','') != indC_np) #transpose required
 else:
-    print "%.2f GFLOPS %.2f GFLOPS speedup: %.2fx"%( gflops/timeTCL, gflops/timeNP, timeNP/ timeTCL)
-    print indC.replace(',','') != indC_np #transpose required
+    print("%.2f GFLOPS %.2f GFLOPS speedup: %.2fx"%( gflops/timeTCL, gflops/timeNP, timeNP/ timeTCL))
+    print(indC.replace(',','') != indC_np) #transpose required
