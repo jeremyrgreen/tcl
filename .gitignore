@@ -6,3 +6,5 @@
 *.swo
 *.exe
 lib/
+
+pythonAPI/tcl\.egg-info/
