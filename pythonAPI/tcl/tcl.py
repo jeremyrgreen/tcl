@@ -4,15 +4,24 @@ from ctypes import cdll
 import os
 import random
 
-TCL_ROOT = ""
+
 try:
     TCL_ROOT = os.environ['TCL_ROOT']
-except:
-    print("[TCL] ERROR: TCL_ROOT environment variable is not set. Point TCL_ROOT to the folder which includes TCL_ROOT/lib/libtcl.so")
-    exit(-1)
+except KeyError:
+    try:
+        import configparser
+        config = configparser.ConfigParser()
+        config.read(os.path.join(os.path.dirname(__file__), 'tcl.cfg'))
+        TCL_ROOT = config['lib']['TCL_ROOT']
+    except KeyError:
+        raise OSError("[TCL] ERROR: 'libtcl.so' can't be found. 'TCL_ROOT' is "
+                      "neither set as an environment variable or specified in "
+                      "the config file. It should point to the folder which "
+                      "includes 'TCL_ROOT/lib/libtcl.so'.")
 
-# load TCL library
-lib = cdll.LoadLibrary(TCL_ROOT+"/lib/libtcl.so")
+
+lib = cdll.LoadLibrary(os.path.join(TCL_ROOT, "lib", "libtcl.so"))
+
 
 def randomNumaAwareInit( A ):
     """

@@ -8,3 +8,5 @@
 lib/
 
 pythonAPI/tcl\.egg-info/
+
+pythonAPI/tcl/tcl\.cfg
