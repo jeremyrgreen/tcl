@@ -75,7 +75,7 @@ def tensorMult( alpha, A, indicesA, B, indicesB, beta,  C, indicesC):
                         ctypes.c_double(beta) , dataC, sizeC, outerSizeC, indicesC, useRowMajor)
 
 def equal(A, B, numSamples=-1):
-    """ Ensures that alle elements of A and B are pretty much equal (due to limited machine precision)
+    """ Ensures that all elements of A and B are pretty much equal (due to limited machine precision)
 
     Parameter:
     numSamples: number of random samples to compare (-1: all). This values is used to approximate this function and speed the result up."
@@ -128,11 +128,20 @@ def einsum(eq, A, B, out=None):
         dtype = np.common_type(A, B)
         A, B = A.astype(dtype), B.astype(dtype)
 
+    # figure out the order of the arrays, and raise if not contiguous
+    if A.flags['C_CONTIGUOUS'] and B.flags['C_CONTIGUOUS']:
+        order = 'C'
+    elif A.flags['F_CONTIGUOUS'] and B.flags['F_CONTIGUOUS']:
+        order = 'F'
+    else:
+        raise ValueError("Arrays are either not contiguous or do not have"
+                         " matching C or F order.")
+
     # create out if it is not supplied
     if out is None:
         sz_dict = {i: (A.shape[A_ix.find(i)] if i in A_ix else
                        B.shape[B_ix.find(i)]) for i in A_ix + B_ix}
-        out = np.empty([sz_dict[i] for i in C_ix], dtype=dtype)
+        out = np.empty([sz_dict[i] for i in C_ix], dtype=dtype, order=order)
 
     # add commas between indices for tcl format
     indA, indB, indC = (",".join(x) for x in (A_ix, B_ix, C_ix))
