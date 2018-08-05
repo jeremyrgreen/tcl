@@ -58,21 +58,27 @@ def tensorMult( alpha, A, indicesA, B, indicesB, beta,  C, indicesC):
     dataC = ctypes.c_void_p(C.ctypes.data)
     sizeC = ctypes.cast(C.ctypes.shape, ctypes.POINTER(ctypes.c_voidp))
     outerSizeC = sizeC
+
     indicesA = ctypes.c_char_p(indicesA.encode('utf-8'))
     indicesB = ctypes.c_char_p(indicesB.encode('utf-8'))
     indicesC = ctypes.c_char_p(indicesC.encode('utf-8'))
-    useRowMajor = 0
-    if( A.flags['C_CONTIGUOUS'] ):
-        useRowMajor = 1
 
-    if( A.itemsize == 4 ):
-        lib.sTensorMult(ctypes.c_float(alpha), dataA, sizeA, outerSizeA, indicesA,
-                                               dataB, sizeB, outerSizeB, indicesB,
-                        ctypes.c_float(beta) , dataC, sizeC, outerSizeC, indicesC, useRowMajor)
-    else:
-        lib.dTensorMult(ctypes.c_double(alpha), dataA, sizeA, outerSizeA, indicesA,
-                                                dataB, sizeB, outerSizeB, indicesB,
-                        ctypes.c_double(beta) , dataC, sizeC, outerSizeC, indicesC, useRowMajor)
+    useRowMajor = int(A.flags['C_CONTIGUOUS'])
+
+    fn, scalar_fn = {
+        'float32': (lib.sTensorMult, ctypes.c_float),
+        'float64': (lib.dTensorMult, ctypes.c_double),
+        'complex64': (lib.cTensorMult, ctypes.c_float),
+        'complex128': (lib.zTensorMult, ctypes.c_double),
+    }[str(A.dtype)]
+
+    fn(scalar_fn(alpha),
+       dataA, sizeA, outerSizeA, indicesA,
+       dataB, sizeB, outerSizeB, indicesB,
+       scalar_fn(beta),
+       dataC, sizeC, outerSizeC, indicesC,
+       useRowMajor)
+
 
 def equal(A, B, numSamples=-1):
     """ Ensures that all elements of A and B are pretty much equal (due to limited machine precision)
