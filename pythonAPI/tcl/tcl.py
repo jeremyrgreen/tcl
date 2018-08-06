@@ -149,11 +149,22 @@ def einsum(eq, A, B, out=None):
                        B.shape[B_ix.find(i)]) for i in A_ix + B_ix}
         out = np.empty([sz_dict[i] for i in C_ix], dtype=dtype, order=order)
 
+    # scalar output -> add dummy size 1 index
+    handle_scalar = out.ndim == 0
+
+    if handle_scalar:
+        A, out = A[np.newaxis, ...], out[np.newaxis, ...]
+        A_ix, C_ix = '#' + A_ix, "#"
+
     # add commas between indices for tcl format
     indA, indB, indC = (",".join(x) for x in (A_ix, B_ix, C_ix))
 
     # perform the contraction!
     tensorMult(1.0, A, indA, B, indB, 0.0, out, indC)
+
+    if handle_scalar:
+        out = np.asscalar(out)
+
     return out
 
 
