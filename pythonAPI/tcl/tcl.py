@@ -22,6 +22,21 @@ except KeyError:
 
 lib = cdll.LoadLibrary(os.path.join(TCL_ROOT, "lib", "libtcl.so"))
 
+# from https://stackoverflow.com/a/65743183
+class c_double_complex(ctypes.Structure):
+    _fields_ = [("real", ctypes.c_double),("imag", ctypes.c_double)]
+    @property
+    def value(self):
+        return self.real+1j*self.imag
+def to_z(x):
+    return c_double_complex(x.real,x.imag)
+class c_float_complex(ctypes.Structure):
+    _fields_ = [("real", ctypes.c_float),("imag", ctypes.c_float)]
+    @property
+    def value(self):
+        return self.real+1j*self.imag
+def to_c(x):
+    return c_float_complex(x.real,x.imag)
 
 def randomNumaAwareInit( A ):
     """
@@ -68,8 +83,8 @@ def tensorMult( alpha, A, indicesA, B, indicesB, beta,  C, indicesC):
     fn, scalar_fn = {
         'float32': (lib.sTensorMult, ctypes.c_float),
         'float64': (lib.dTensorMult, ctypes.c_double),
-        'complex64': (lib.cTensorMult, ctypes.c_float),
-        'complex128': (lib.zTensorMult, ctypes.c_double),
+        'complex64': (lib.cTensorMult, to_c),
+        'complex128': (lib.zTensorMult, to_z),
     }[str(A.dtype)]
 
     fn(scalar_fn(alpha),
